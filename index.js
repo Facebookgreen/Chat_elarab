@@ -4,12 +4,17 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const path = require('path');
 
-app.use(express.static('public'));
+// السطر ده مهم جداً عشان فيرسال يشوف الملفات اللي جوه فولدر public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// السطر ده بيضمن إن أي حد يدخل على الرابط يفتح له صفحة الشات فوراً
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 io.on('connection', (socket) => {
     socket.on('join', (data) => {
         let role = 'زائر';
-        // نظام حماية الرتب
         if (data.name === 'حازم' && data.pass === 'hazem123') role = 'صاحب الموقع 👑';
         else if (data.name === 'صهيب') role = 'وزير الشات ⚖️';
         else if (data.name === 'نسمة') role = 'أونر 💎';
@@ -25,4 +30,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => { console.log('Server is running on port ' + PORT); });
+http.listen(PORT, () => { console.log('Server running'); });
