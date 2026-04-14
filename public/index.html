@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Hazem Pro Chat</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { margin: 0; background: #0b0b0b; color: #eee; font-family: 'Segoe UI', sans-serif; }
+        #chat-ui { display: flex; flex-direction: column; height: 100vh; }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; list-style: none; background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://bit.ly/3L8XJ4G'); background-size: cover; }
+        .msg-box { background: rgba(255, 255, 255, 0.07); border: 1px solid #ff00ff; border-radius: 12px; margin-bottom: 15px; padding: 12px; box-shadow: 0 0 10px rgba(255, 0, 255, 0.3); }
+        .role-tag { font-size: 11px; background: #ff00ff; color: white; padding: 2px 8px; border-radius: 5px; margin-left: 10px; font-weight: bold; }
+        .user-name { color: #00e5ff; font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; }
+        .msg-box[data-role*="وزير"] { border-color: #00ff00; box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); }
+        .msg-box[data-role*="صاحب"] { border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); border-width: 2px; }
+        #input-area { background: #1a1a1a; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #333; }
+        input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #444; background: #222; color: white; outline: none; }
+        button { background: #ff00ff; color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="chat-ui">
+        <ul id="messages"></ul>
+        <form id="form" id="input-area">
+            <input id="input" placeholder="اكتب رسالتك يا بطل..." autocomplete="off" />
+            <button>إرسال</button>
+        </form>
+    </div>
+    <script>
+        var socket = io();
+        var name = prompt("ادخل اسمك:");
+        var pass = "";
+        if(name === "حازم") pass = prompt("ادخل كلمة سر المدير:");
+        socket.emit('join', { name: name, pass: pass });
+
+        var form = document.getElementById('form');
+        var input = document.getElementById('input');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (input.value) { socket.emit('chatMessage', input.value); input.value = ''; }
+        });
+
+        socket.on('message', function(data) {
+            var item = document.createElement('li');
+            if(data.type == 'system') {
+                item.style.textAlign = 'center'; item.style.fontSize = '12px'; item.style.color = '#aaa'; item.textContent = data.text;
+            } else {
+                item.className = 'msg-box'; item.setAttribute('data-role', data.role);
+                item.innerHTML = `<span class="user-name"><span class="role-tag">${data.role}</span> ${data.name}</span> <span class="text">${data.text}</span>`;
+            }
+            document.getElementById('messages').appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+    </script>
+</body>
+</html>
